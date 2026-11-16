@@ -2,14 +2,15 @@
 
 public class Machine
 {
-
     private Guid machineID { get; set; } = Guid.NewGuid();
-
     private States State { get; set; } = States.FreeToTakeLeergut;
     private System.Timers.Timer? Timer { get; set; }
 
-    public Machine(){
-        
+    private IControlAPI controlAPI;
+
+    public Machine(IControlAPI controlAPI)
+    {
+        this.controlAPI = controlAPI;
     }
 
     public void startTimer(int seconds, Action callback)
@@ -36,30 +37,29 @@ public class Machine
 
     public void StartWorker()
     {
-        lock (ControlAPI.SyncLock)
+        lock (Simulator.SyncLock)
         {
-            Console.WriteLine("----------------------");
-            Console.WriteLine($"Is Awake, what shall I do {this.machineID}?");
+            Console.WriteLine($"-------------- Start {this.machineID} ------------");
             switch (this.State)
             {
                 case States.FreeToTakeLeergut:
-                    if (!ControlAPI.getLeergutAvailable())
+                    if (!this.controlAPI.GetLeergutAvailable())
                     {
                         Console.WriteLine($"currently no freegut available to fill..{this.machineID}");
                         break;
                     }
                     State = States.Filling;
-                    ControlAPI.setFreeLeergutAvailable(false);
+                    this.controlAPI.SetFreeLeergutAvailable(false);
                     startTimer(10, () => onFilling());
                     break;
                 case States.FreeToPutVollgut:
-                    if (ControlAPI.getFullPlaceSensor())
+                    if (this.controlAPI.GetFullPlaceSensor())
                     {
                         Console.WriteLine($"Place still occupied, cant take it machineID: {this.machineID}");
                         break;
                     }
                     State = States.FreeToTakeLeergut;
-                    ControlAPI.setFullPlaceSensor(true);
+                    this.controlAPI.SetFullPlaceSensor(true);
                     Console.WriteLine($"Putting Vollgut machineID: {this.machineID}");
                     StartWorker();
                     Console.WriteLine($"Machine is ready to take leergut: {this.machineID}");
@@ -68,16 +68,14 @@ public class Machine
                     Console.WriteLine($"Iam filling currently machineID: {this.machineID}");
                     break;
             }
-            Console.WriteLine("----------------------");
+            Console.WriteLine($"-------------- END {this.machineID} ------------");
+            Console.WriteLine("");
         }
     }
 
     void onFilling()
     {
-        lock (ControlAPI.SyncLock)
-        {
-            State = States.FreeToPutVollgut;
-            StartWorker();
-        }
+        State = States.FreeToPutVollgut;
+        StartWorker();
     }
 };

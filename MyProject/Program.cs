@@ -2,9 +2,11 @@
 {
     static void Main(string[] args)
     {
-        var simulator = new Simulator();
+        //var controlAPI = new ControlAPINoImpl();
+        var controlAPI = new ControlAPI();
+        var simulator = new Simulator(controlAPI);
         Console.WriteLine("Booting up...");
-        ControlAPI.initSimulator(simulator);
+        controlAPI.InitSimulator(simulator);
         simulator.runMachines(); // take "Leergut" right away
 
         using var cts = new CancellationTokenSource();
@@ -16,7 +18,13 @@
 
         while (!cts.IsCancellationRequested)
         {
-            try { ControlAPI.runControlSystem(); }
+            try {
+                lock(Simulator.SyncLock)
+                {
+                    controlAPI.RunControlSystem();
+                }
+                Thread.Sleep(5000);
+            }
             catch (Exception ex) { Console.WriteLine(ex); }
         }
 

@@ -1,53 +1,49 @@
 ﻿public class Simulator : ISensor
+{
+    public static readonly object SyncLock = new();
+
+    private Machine[] ArrayOfMachines = [];
+
+    public Simulator(IControlAPI controlAPI)
     {
-        private Machine[] ArrayOfMachines = [
-            new Machine() {}, new Machine() { }, new Machine() {}
-            ];
+        ArrayOfMachines = [new Machine(controlAPI) { }, new Machine(controlAPI) { }, new Machine(controlAPI) { }];
+    }
+    public void killTimer(Guid id)
+    {
+        var foundMachine = ArrayOfMachines.FirstOrDefault(m => m.GetMachineID().Equals(id));
+        foundMachine?.StopTimer();
+    }
 
-        public void killTimer(Guid id)
+    public void shutdown()
+    {
+        foreach (var machine in ArrayOfMachines)
         {
-            lock (ControlAPI.SyncLock)
-            {
-                var foundMachine = ArrayOfMachines.FirstOrDefault(m => m.GetMachineID().Equals(id));
-                foundMachine?.StopTimer();
-            }
+            killTimer(machine.GetMachineID());
         }
-
-        public void shutdown()
-        {
-            lock (ControlAPI.SyncLock)
-            {
-                foreach (var machine in ArrayOfMachines)
-                {
-                    killTimer(machine.GetMachineID());
-                }
-            }
-        }
+    }
 
     public void runMachines()
+    {
+        foreach (var machine in ArrayOfMachines)
         {
-            foreach (var machine in ArrayOfMachines)
-            {
-                machine.StartWorker();
-            }
-
+            machine.StartWorker();
         }
-
-        public void onEmptyPlaceSensorChanged()
-        {
-            this.runMachines();
-        }
-
-        public void onFullPlaceSensorChanged()
-        {
-            this.runMachines();
-        }
-
-        public enum States
-        {
-            FreeToTakeLeergut,
-            Filling,
-            FreeToPutVollgut
-        }
-
     }
+
+    public void onEmptyPlaceSensorChanged()
+    {
+        this.runMachines();
+    }
+
+    public void onFullPlaceSensorChanged()
+    {
+        this.runMachines();
+    }
+
+    public enum States
+    {
+        FreeToTakeLeergut,
+        Filling,
+        FreeToPutVollgut
+    }
+}

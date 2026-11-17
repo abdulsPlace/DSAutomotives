@@ -4,6 +4,6 @@ public interface IControlAPI
     public void SetFreeLeergutAvailable(bool value);
     public bool GetFullPlaceSensor();
     public void SetFullPlaceSensor(bool value);
-    public void InitSimulator(ISensor simulator);
+    public void InitSimulator(ISensorObserver simulator);
     public void RunControlSystem();
 }

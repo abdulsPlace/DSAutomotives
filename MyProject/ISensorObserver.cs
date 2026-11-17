@@ -1,4 +1,4 @@
-﻿public interface ISensor
+﻿public interface ISensorObserver
 {
     public void onEmptyPlaceSensorChanged();
     public void onFullPlaceSensorChanged();

@@ -1,8 +1,8 @@
 ﻿public class ControlAPI : IControlAPI
 {
-    List<ISensor> list = new List<ISensor>();
-    bool _emptySensor = false;
-    bool _fullPlaceSensor = false;
+    private List<ISensorObserver> list = new List<ISensorObserver>();
+    private bool _emptySensor = false;
+    private bool _fullPlaceSensor = false;
 
     public bool GetLeergutAvailable() { return _emptySensor; }
     public bool GetFullPlaceSensor() { return _fullPlaceSensor; }
@@ -29,9 +29,9 @@
         list.ForEach(m => m.onFullPlaceSensorChanged());
     }
 
-    public void InitSimulator(ISensor simulator)
+    public void InitSimulator(ISensorObserver observer)
     {
-        list.Add(simulator);
+        list.Add(observer);
     }
 
     public void RunControlSystem()

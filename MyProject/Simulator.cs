@@ -1,4 +1,4 @@
-﻿public class Simulator : ISensor
+﻿public class Simulator : ISensorObserver
 {
     public static readonly object SyncLock = new();
 

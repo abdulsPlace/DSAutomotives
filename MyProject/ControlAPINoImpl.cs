@@ -12,7 +12,7 @@
         return false;
     }
 
-    public void InitSimulator(ISensor simulator)
+    public void InitSimulator(ISensorObserver simulator)
     {
         Console.WriteLine("InitSimulator: not implemented yet");
     }
